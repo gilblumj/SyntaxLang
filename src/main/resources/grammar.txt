@@ -1,0 +1,107 @@
+# Literals
+DIGIT_OCT						[0-7]
+DIGIT_HEX						[A-Fa-f0-9]
+
+IDENTIFIER:						/[A-Za-z_][A-Za-z0-9_]*/
+STRING:							'"' STRING_CHAR_DQ* '"' | ''' STRING_CHAR_SQ* '''
+NUMBER:							'0b' [01]+ | '0o' DIGIT_OCT+ | '0x' DIGIT_HEX+ | (\.\d+|\d+\.?\d*)([eE][+-]?\d+)?
+COMPLEX:						NUMBER ('i' | 'j')
+BOOLEAN:						'true' | 'false'
+
+STRING_CHAR_ESC:				'\' ([befnrtv\'"] | DIGIT_OCT{1,3} | 'x' DIGIT_HEX{2} | 'u' DIGIT_HEX{4} | 'U{' DIGIT_HEX{1,6} '}')
+STRING_CHAR_DQ:					[^\"] | STRING_CHAR_ESC
+STRING_CHAR_SQ:					[^\'] | STRING_CHAR_ESC
+
+LITERAL:						IDENTIFIER | STRING | NUMBER | COMPLEX | BOOLEAN
+
+# statements
+
+main_statements:				statements* EOF
+statements:						statements_block | statement
+statements_block:				'{' statements* '}'
+statement:						statement_part_semi ';' | statement_part | ';'
+
+statements_block_class:			'{' statements_block_class_body '}'
+statements_block_class_body:	(var_decl ';' | func_def)*
+
+statements_block_func:			'{' func_def* '}'
+
+statement_part_semi:			'yield' expr | 'return' expr? | 'break' IDENTIFIER? | 'continue' IDENTIFIER? | 'namespace' IDENTIFIER | 'import' STRING | 'using' IDENTIFIER | expr
+statement_part:					trycatch_block | if_block | for_block | foreach_block | while_block | dowhile_block | switch_block | 
+								class | enum | interface | func_def
+
+# blocks
+
+trycatch_block:					'try' statements_block 'catch' '(' IDENTIFIER ')' statements_block
+if_block:						'if' condition statements (('elseif' | 'elif') condition statements)* ('else' statements)?
+for_block:						labeled 'for' '(' (var_decl (',' var_decl)*)? ';' expr? ';' (expr (',' expr)*)? ')' statements
+foreach_block:					labeled 'foreach' '(' IDENTIFIER 'in' expr ')' statements
+while_block:					labeled 'while' condition statements
+dowhile_block:					labeled 'do' statements_block 'while' condition
+
+switch_block:					'switch' '(' expr ')' '{' (('case' expr | 'default') ':' statements*)* '}'
+switch_value_block:				'switch' '(' expr ')' '{' (('case' expr | 'default') '->' expr)* '}'
+
+condition:						'(' expr ')'
+
+labeled:						(IDENTIFIER ':')?
+
+# variables, functions, classes, structs, enums, interfaces
+
+## variables
+var_decl:						('public' | 'private' | 'protected')? 'static'? 'final'? IDENTIFIER '=' expr
+var_mod:						IDENTIFIER ('+=' | '-=' | '*=' | '/=' | '%=' | '**=' | '<<=' | '>>=' | '&=' | '^=' | '|=') expr 
+
+## functions
+func_def:						('public' | 'private' | 'protected')? 'static'? ('final' | 'abstract' | 'default')? 'fun' IDENTIFIER 
+								'(' func_args ')' statements_block
+
+func_args						(func_args_part (',' func_args_part)*)? ('...' IDENTIFIER)?
+func_args_part:					IDENTIFIER ('=' expr)?
+
+func_call_args:					(expr (',' expr)*)?
+
+func_anonymous:					func_anonymous_1 | func_anonymous_2
+
+func_anonymous_1:				fun '(' func_args ')' statements_block
+func_anonymous_2:				(IDENTIFIER | '(' func_args ')') '=>' (expr | statements_block)
+
+## classes
+class:							('public' | 'private' | 'protected')? 'cloneable'? ('final' | 'abstract')? 'class' IDENTIFIER ('extends' (IDENTIFIER '\')? IDENTIFIER)? 
+								('implements' (IDENTIFIER '\')? IDENTIFIER (',' (IDENTIFIER '\')? IDENTIFIER)*)? statements_block_class
+
+## enums
+enum:							('public' | 'private' | 'protected')? 'enum' IDENTIFIER ('implements' (IDENTIFIER '\')? IDENTIFIER (',' (IDENTIFIER '\')? IDENTIFIER)*)? '{'
+								(enum_constant (',' enum_constant)*)? ';' statements_block_class_body '}'
+
+enum_constant:					IDENTIFIER ('(' func_call_args ')')?
+
+## interfaces
+
+interface:						('public' | 'private' | 'protected')? 'interface' IDENTIFIER ('extends' (IDENTIFIER '\')? IDENTIFIER (',' (IDENTIFIER '\')? IDENTIFIER)*)? statements_block_func
+
+# Math
+
+expr:							'throw' expr | var_decl | var_mod | math1 ('?' expr ':' math1)?
+
+math1:							math2 (('||' | 'or') math2)*
+math2:							math3 (('&&' | 'and') math3)*
+math3:							math4 (('|') math4)*
+math4:							math5 (('^') math5)*
+math5:							math6 (('&') math6)*
+math6:							math7 (('==' | '!=' | '===' | '!==' | 'is') math7)*
+math7:							math8 (('<' | '>' | '<=' | '>=') math8)*
+math8:							math9 ('instanceof' IDENTIFIER)
+math9:							math10 (('<<' | '>>') math10)*
+math10:							math11 (('+' | '-') math11)*
+math11:							math12 (('*' | '/' | '%' | '**') math12)*
+math12:							('++' | '--' | '+' | '-' | '!' | '~' | 'not' | 'new' | 'clone')? math13
+math13:							math14 ('(' func_call_args ')' | '[' expr ']' | '.' IDENTIFIER | '++' | '--')*
+math14:							(IDENTIFIER '\')? math15
+math15:							'(' expr ')' | LITERAL | 'null' | list | map | func_anonymous | switch_value_block
+
+# Lists & maps
+list:							'[' call_args ']'
+map:							'{' (map_part (',' map_part)*) '}'
+
+map_part:						LITERAL ':' expr

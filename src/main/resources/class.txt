@@ -1,0 +1,77 @@
+# -- SPECIAL CLASS & ENUM FUNCTIONS --
+
+class CLASSNAME {
+
+    fun CLASSNAME(args) {} # new CLASSNAME(args) (cannot be invoked by calling CLASSNAME.CLASSNAME, returns void, always private for enums)
+
+    fun __equ(other) {} # this == other (returns boolean)
+    fun __ieq(other) {} # this === other (returns boolean)
+
+    fun __and(other) {} # this && other (returns boolean)
+    fun __or(other) {} # this || other (returns boolean)
+
+    fun __lss(other) {} # this < other (returns boolean)
+    fun __leq(other) {} # this <= other (returns boolean)
+    fun __gtr(other) {} # this > other (returns boolean)
+    fun __geq(other) {} # this >= other (returns boolean)
+
+    fun __idx(index) {} # this[index]
+
+    fun __bitand(other) {} # this & other
+    fun __xor(other) {} # this ^ other
+    fun __bitor(other) {} # this | other
+
+    fun __lsh(other) {} # this << other
+    fun __rsh(other) {} # this >> other
+
+    fun __add(other) {} # this + other
+    fun __sub(other) {} # this - other
+    fun __mul(other) {} # this * other
+    fun __div(other) {} # this / other
+    fun __mod(other) {} # this % other
+    fun __pow(other) {} # this ** other
+
+    fun __inc() {} # ++this
+    fun __dec() {} # --this
+
+    fun __plus() {} # +this
+    fun __minus() {} # -this
+    fun __not() {} # !this
+    fun __compl() {} # ~this
+
+    fun __clone() {} # clone this
+
+    fun __hashcode() {} # hashcode (returns number)
+
+    fun __string() {} # string representation (returns string)
+    fun __number() {} # number representation (returns number)
+    fun __complex() {} # complex representation (returns complex)
+    fun __boolean() {} # boolean representation (returns boolean)
+
+}
+
+# -- RESERVED ENUM FUNCTIONS --
+
+enum ENUMNAME {
+    # ...
+    ;
+
+    final fun name() {} # constant name
+    final fun ordinal() {} # constant index
+
+    static fun values() {} # array of constants
+    static fun valueOf(name) {} # convert name to constant
+
+}
+
+# -- STDLIB - EXCEPTION --
+
+class Exception {
+
+    fun Exception(message) {}
+
+    final fun getMessage() {}
+
+    final fun printStackTrace() {}
+
+}
